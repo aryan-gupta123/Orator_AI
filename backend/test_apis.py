@@ -28,7 +28,7 @@ async def test_gemini():
     try:
         import google.generativeai as genai
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-2.0-flash-exp")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         
         response = await model.generate_content_async("Say 'API test successful' in 3 words")
         
@@ -46,18 +46,18 @@ async def test_elevenlabs():
     """Test ElevenLabs API key"""
     print("🔊 Testing ElevenLabs...")
     try:
-        from elevenlabs import ElevenLabs
-        client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
+        import elevenlabs
+        elevenlabs.set_api_key(os.getenv("ELEVENLABS_API_KEY"))
         
-        # Test basic TTS
-        audio = client.text_to_speech.convert(
-            voice_id="21m00Tcm4TlvDq8ikWAM",  # Rachel
+        # Test basic TTS using the generate function
+        audio = elevenlabs.generate(
             text="API test",
-            model_id="eleven_turbo_v2_5"
+            voice="21m00Tcm4TlvDq8ikWAM",  # Rachel
+            model="eleven_turbo_v2_5"
         )
         
         # Check if we got audio data
-        audio_bytes = b"".join(audio)
+        audio_bytes = audio if isinstance(audio, bytes) else b"".join(audio) if hasattr(audio, '__iter__') else b""
         
         if len(audio_bytes) > 0:
             print(f"   ✅ ElevenLabs working! Generated {len(audio_bytes)} bytes of audio")

@@ -1,11 +1,11 @@
 import os
-from elevenlabs import ElevenLabs
+import elevenlabs
 from typing import AsyncIterator
 
 class ElevenLabsService:
     def __init__(self):
         self.api_key = os.getenv("ELEVENLABS_API_KEY")
-        self.client = ElevenLabs(api_key=self.api_key)
+        elevenlabs.set_api_key(self.api_key)
         
         # Voice IDs (you can customize these)
         self.voices = {
@@ -28,11 +28,10 @@ class ElevenLabsService:
         
         try:
             # Generate audio with streaming
-            audio_stream = self.client.text_to_speech.convert(
-                voice_id=voice_id,
+            audio_stream = elevenlabs.generate(
                 text=text,
-                model_id="eleven_turbo_v2_5",  # Fastest model
-                output_format="mp3_44100_128",
+                voice=voice_id,
+                model="eleven_turbo_v2_5",  # Fastest model
                 stream=True
             )
             

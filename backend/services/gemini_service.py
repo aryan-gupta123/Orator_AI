@@ -13,7 +13,7 @@ from prompts.system_prompts import (
 class GeminiService:
     def __init__(self):
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
+        self.model = genai.GenerativeModel("gemini-2.5-flash")
         
     async def generate_response(
         self, 

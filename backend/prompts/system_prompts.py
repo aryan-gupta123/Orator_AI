@@ -32,7 +32,6 @@ Style:
 - Aggressive but respectful
 - Use logic, statistics, and real examples
 - Challenge your opponent's weak points
-- When you have strong evidence, use [SEARCH: specific query] to pull video clips
 - Keep responses punchy - this is live debate, not an essay
 - Don't be afraid to interrupt (the user can barge in too)
 
@@ -46,7 +45,6 @@ Style:
 - Aggressive but respectful
 - Use logic, statistics, and real examples
 - Challenge your opponent's weak points
-- When you have strong evidence, use [SEARCH: specific query] to pull video clips
 - Keep responses punchy - this is live debate, not an essay
 - Don't be afraid to interrupt (the user can barge in too)
 
