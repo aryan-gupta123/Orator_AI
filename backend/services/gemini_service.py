@@ -74,7 +74,6 @@ DEBATE SO FAR:
 {context}
 
 Make your argument. Keep it punchy (2-3 sentences). 
-If you find strong evidence, you can say [SEARCH: your search query] and we'll find video evidence.
 Speak naturally - you're in a live debate."""
         
         response = await self.model.generate_content_async(prompt)
@@ -131,12 +130,3 @@ Provide feedback in this exact JSON format:
             formatted.append(f"{role}: {msg['content']}")
             
         return "\n".join(formatted)
-        
-    async def check_for_video_search(self, text: str) -> tuple[bool, str]:
-        """Check if response contains video search request"""
-        if "[SEARCH:" in text and "]" in text:
-            start = text.index("[SEARCH:") + 8
-            end = text.index("]", start)
-            query = text[start:end].strip()
-            return True, query
-        return False, ""

@@ -6,22 +6,8 @@
 - [ ] Deepgram account + API key
 - [ ] Google AI Studio + Gemini API key  
 - [ ] ElevenLabs account + API key
-- [ ] TwelveLabs account + API key
 - [ ] All keys added to `.env` file
 - [ ] Shared `.env` with Person A (via secure channel)
-
-### TwelveLabs Pre-indexing (2-3 hours)
-- [ ] Created TwelveLabs index at https://playground.twelvelabs.io/
-- [ ] Selected model: Marengo 3.0 or Pegasus 1.2 (includes Visual + Audio)
-- [ ] Index ID added to `.env`
-- [ ] Found 5-10 YouTube videos:
-  - [ ] 2-3 negotiation/business clips
-  - [ ] 2-3 AI regulation/tech policy clips
-  - [ ] 2-3 remote work/workplace clips
-  - [ ] 1-2 fun debate clips (pizza, sports, etc.)
-- [ ] Updated `index_videos.py` with video URLs
-- [ ] Ran `python index_videos.py` successfully
-- [ ] Saved list of indexed video IDs
 
 ### Environment Setup (15 minutes)
 - [ ] Python 3.9+ installed
@@ -129,34 +115,18 @@
 
 ---
 
-## 🕐 HOUR 11-13: TWELVELABS
+## 🕐 HOUR 11-13: POLISH & TESTING
 
 ### Tasks
-- [ ] Video search function implemented
-- [ ] Parsing `[SEARCH: query]` from AI responses
-- [ ] Calling TwelveLabs API
-- [ ] Sending video ID + timestamp to frontend
-- [ ] Updated debater prompts to use search
+- [ ] All prompts tuned for quality
+- [ ] Edge cases handled
+- [ ] Performance optimized
+- [ ] Demo scenarios prepared
 
 ### Sync with Person A
-- [ ] Person A has video player component
-- [ ] Video jumps to correct timestamp
-- [ ] Multiple videos can be referenced
-
-### Test
-```bash
-# Arena mode with AI debate:
-# - AI says something like "research shows..."
-# - AI includes [SEARCH: AI safety research]
-# - Video player loads relevant clip
-# - Timestamp jumps to right moment
-```
-
-### Debug Checklist
-- [ ] Check TWELVELABS_INDEX_ID in `.env`
-- [ ] Verify videos are actually indexed
-- [ ] Test search with simple queries first
-- [ ] Check video_id format matches frontend
+- [ ] All modes tested together
+- [ ] UI/UX polished
+- [ ] Ready for final demo prep
 
 ---
 
@@ -207,11 +177,10 @@
    - Switch to arena mode
    - Start AI debate (pineapple pizza or AI regulation)
    - Show two AIs debating
-   - Trigger video evidence
    - Use barge-in button
 
 4. **Wrap** (15 seconds)
-   - "4 APIs, real-time streaming, video RAG"
+   - "3 APIs, real-time streaming, live coaching"
    - "Built in 18 hours"
 
 ### Judge Q&A Prep
@@ -225,7 +194,7 @@
 > "Practicing difficult conversations is hard. Job negotiations, debates, conflict resolution - people avoid these. We make it safe, fun, and you get better through practice."
 
 **"How's this different from ChatGPT Voice?"**
-> "ChatGPT is conversational but not adversarial. Our AI pushes back, argues, negotiates. Plus real-time coaching and video evidence in debates."
+> "ChatGPT is conversational but not adversarial. Our AI pushes back, argues, negotiates. Plus real-time coaching feedback during conversations."
 
 **"What's the business model?"**
 > "B2B for sales training and interview prep. B2C subscription for personal development. API for others to build on."

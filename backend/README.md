@@ -2,7 +2,7 @@
 
 ## 🎯 Your Responsibilities
 - All AI logic and content
-- Prompts, Gemini orchestration, TwelveLabs
+- Prompts, Gemini orchestration
 - WebSocket audio pipeline
 - Demo prep and fallbacks
 
@@ -14,13 +14,10 @@ backend/
 ├── requirements.txt             # Python dependencies
 ├── .env                         # API keys (DO NOT COMMIT)
 ├── setup_and_run.sh            # Quick setup script
-├── index_videos.py             # Pre-hackathon video indexing
-│
 ├── services/
 │   ├── deepgram_service.py     # Speech-to-text streaming
 │   ├── gemini_service.py       # AI logic & prompts
-│   ├── elevenlabs_service.py   # Text-to-speech streaming
-│   └── twelvelabs_service.py   # Video search
+│   └── elevenlabs_service.py   # Text-to-speech streaming
 │
 ├── models/
 │   └── session.py              # Conversation state
@@ -36,7 +33,6 @@ backend/
 - **Deepgram**: https://console.deepgram.com/ (STT)
 - **Google AI Studio**: https://aistudio.google.com/app/apikey (Gemini)
 - **ElevenLabs**: https://elevenlabs.io/app/settings/api-keys (TTS)
-- **TwelveLabs**: https://playground.twelvelabs.io/ (Video search)
 
 ### 2. Setup Environment
 
@@ -50,30 +46,9 @@ Edit `.env` and add your API keys:
 DEEPGRAM_API_KEY=your_key_here
 GEMINI_API_KEY=your_key_here
 ELEVENLABS_API_KEY=your_key_here
-TWELVELABS_API_KEY=your_key_here
-TWELVELABS_INDEX_ID=your_index_id_here
 ```
 
-### 3. Pre-Hackathon: Index Videos
-
-**THIS MUST BE DONE BEFORE HACKATHON STARTS!**
-
-1. Go to https://playground.twelvelabs.io/
-2. Create a new index with model:
-   - **Marengo 3.0** (recommended) or **Pegasus 1.2**
-   - Both include Visual + Audio automatically
-3. Copy the Index ID to `.env`
-4. Find 5-10 YouTube videos for evidence:
-   - Negotiation tactics (Chris Voss)
-   - AI regulation debates
-   - Remote work debates
-   - Fun debate clips (pineapple pizza, etc.)
-5. Update `index_videos.py` with your video URLs
-6. Run: `python index_videos.py`
-
-**⏰ Indexing takes 5-10 minutes per video - DO THIS EARLY!**
-
-### 4. Test the Server
+### 3. Test the Server
 
 ```bash
 python main.py
@@ -123,9 +98,6 @@ curl http://localhost:8000
 // AI speech audio (MP3 chunks)
 { type: 'audio', data: '<base64Mp3Chunk>' }
 
-// Video evidence clip
-{ type: 'video', data: { videoId: 'abc123', timestamp: 45.2 } }
-
 // Coach feedback (dojo mode)
 { type: 'coach', data: { sentiment: 'strong', advice: 'Great anchor!', score: 85 } }
 
@@ -142,7 +114,6 @@ curl http://localhost:8000
 ### Arena Mode (Fight Club)
 - Two AI debaters argue opposite sides
 - User can "barge in" to interrupt
-- AIs can trigger video evidence with `[SEARCH: query]`
 
 ### Available Scenarios
 1. `salary_negotiation` - Negotiate salary with hiring manager
@@ -176,12 +147,10 @@ curl http://localhost:8000
 - [x] "Barge in" interruption handling
 - [x] Test: both modes working
 
-### Hour 11-13: TwelveLabs
-- [x] Pre-indexed videos ready
-- [x] `search_video_evidence()` function
-- [x] Parse response, send video_id + timestamp
-- [x] Update debater prompts for `[SEARCH: query]`
-- [x] Test: AI triggers video
+### Hour 11-13: Polish & Testing
+- [x] All modes working smoothly
+- [x] Edge case handling
+- [x] Performance optimization
 
 ### Hour 13-16: Polish
 - [x] Coach sidebar streaming JSON
@@ -215,16 +184,11 @@ curl http://localhost:8000
 - Cache responses for hardcoded demo scenarios
 - Use `gemini-2.0-flash-exp` (already set)
 
-### "TwelveLabs no results"
-- Check index has videos indexed
-- Try broader search queries
-- Verify index_id in `.env`
 
 ## 🎯 Demo Tips
 
 1. **Have Fallbacks**:
    - Cache AI responses for demo scenarios
-   - Pre-load video clips
    - Record backup video of it working
 
 2. **Test Edge Cases**:
@@ -260,9 +224,9 @@ curl http://localhost:8000
 - How does frontend tell backend which mode?
 - Test both dojo and arena
 
-**Hour 13**: TwelveLabs videos?
-- Share list of indexed videos
-- Person A needs video IDs for testing
+**Hour 13**: Final testing?
+- Test all scenarios together
+- Verify everything works smoothly
 
 **Hour 16**: Demo script?
 - Both review exact flow
@@ -272,15 +236,14 @@ curl http://localhost:8000
 
 **Technical Complexity**:
 - Real-time bidirectional audio streaming
-- Multi-model orchestration (4 APIs!)
-- Video RAG with synchronized playback
+- Multi-model orchestration (3 APIs!)
 
 **Completion**:
 - It works. Live. No slides. No mockups.
 
 **Originality**:
 - Voice-to-voice AI with live coach sidebar
-- AI debates with video evidence
+- AI debates with real-time feedback
 - We haven't seen this combo before
 
 **Startup Potential**:
@@ -293,7 +256,6 @@ curl http://localhost:8000
 ## 🚨 Before You Start Coding
 
 - [ ] All API keys obtained
-- [ ] Videos indexed in TwelveLabs
 - [ ] Tested MediaRecorder in browser (Person A)
 - [ ] Agreed on repo structure (monorepo vs separate)
 - [ ] Picked 3 debate topics + 2 training scenarios

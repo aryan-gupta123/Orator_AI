@@ -7,7 +7,6 @@ from typing import Dict
 from services.deepgram_service import DeepgramService
 from services.gemini_service import GeminiService
 from services.elevenlabs_service import ElevenLabsService
-from services.twelvelabs_service import TwelveLabsService
 from models.session import Session
 
 app = FastAPI()
@@ -34,7 +33,6 @@ async def websocket_endpoint(websocket: WebSocket):
     deepgram = DeepgramService()
     gemini = GeminiService()
     elevenlabs = ElevenLabsService()
-    twelvelabs = TwelveLabsService()
     
     session = Session(session_id=str(session_id))
     sessions[str(session_id)] = session
@@ -90,25 +88,6 @@ async def websocket_endpoint(websocket: WebSocket):
                             session.history, session.scenario, session.current_debater
                         )
                         speaker = f"ai_{session.current_debater}"
-                    
-                    # Check for video search request
-                    has_search, search_query = await gemini.check_for_video_search(response)
-                    
-                    if has_search:
-                        # Remove search tag from response
-                        response = response.replace(f"[SEARCH: {search_query}]", "").strip()
-                        
-                        # Search for video
-                        video_result = await twelvelabs.search_video_evidence(search_query)
-                        
-                        if video_result:
-                            await websocket.send_json({
-                                "type": "video",
-                                "data": {
-                                    "videoId": video_result["video_id"],
-                                    "timestamp": video_result["timestamp"]
-                                }
-                            })
                     
                     # Add AI response to history
                     session.add_message("ai", response)

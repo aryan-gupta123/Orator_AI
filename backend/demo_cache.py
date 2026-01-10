@@ -41,24 +41,13 @@ SALARY_DEMO = {
 
 # AI Debate Demo Script
 AI_DEBATE_DEMO = {
-    "debater_a_1": "AI regulation is absolutely necessary. We're developing technology that could reshape society, and we need guardrails. [SEARCH: AI safety concerns experts] Look at what experts are saying about the risks.",
+    "debater_a_1": "AI regulation is absolutely necessary. We're developing technology that could reshape society, and we need guardrails. Look at what experts are saying about the risks.",
     
-    "debater_b_1": "Regulation will only slow innovation and create regulatory capture. The big tech companies will write the rules to benefit themselves. [SEARCH: tech regulation failure examples] History shows this pattern repeatedly.",
+    "debater_b_1": "Regulation will only slow innovation and create regulatory capture. The big tech companies will write the rules to benefit themselves. History shows this pattern repeatedly.",
     
     "debater_a_2": "But without regulation, we risk catastrophic outcomes. We need independent oversight, not industry self-regulation. The stakes are too high to just hope companies do the right thing.",
     
-    "debater_b_2": "Innovation moves faster than regulation. By the time rules are written, the technology has evolved. We need adaptive frameworks, not rigid laws that become obsolete immediately.",
-    
-    "video_1": {
-        "videoId": "sample_video_1",
-        "timestamp": 125.5,
-        "trigger": "AI safety concerns experts"
-    },
-    "video_2": {
-        "videoId": "sample_video_2", 
-        "timestamp": 45.2,
-        "trigger": "tech regulation failure examples"
-    }
+    "debater_b_2": "Innovation moves faster than regulation. By the time rules are written, the technology has evolved. We need adaptive frameworks, not rigid laws that become obsolete immediately."
 }
 
 class DemoCache:
@@ -87,20 +76,11 @@ class DemoCache:
             
             response = self.debate_responses.get(response_key, "")
             
-            # Check for video triggers
-            video = None
-            for key, value in self.debate_responses.items():
-                if key.startswith("video_") and isinstance(value, dict):
-                    if value.get("trigger") in response:
-                        video = value
-                        break
-            
             return {
-                "response": response,
-                "video": video
+                "response": response
             }
         
-        return {"response": "", "coach": None, "video": None}
+        return {"response": "", "coach": None}
     
     def should_use_cache(self) -> bool:
         """
@@ -121,7 +101,6 @@ if cache.should_use_cache():
     cached = cache.get_cached_response(session.mode, session.turn_count)
     response = cached["response"]
     coach_feedback = cached.get("coach")
-    video_data = cached.get("video")
 else:
     # Use real APIs
     response = await gemini.generate_response(...)
