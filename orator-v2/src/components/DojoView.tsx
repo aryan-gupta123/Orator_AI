@@ -70,15 +70,15 @@ export function DojoView({
         </div>
 
         {/* Conversation area */}
-        <GlassCard variant="default" glow="subtle" className="flex-1 flex flex-col overflow-hidden">
-          {/* Chat */}
-          <div className="flex-1 min-h-0 overflow-hidden">
+        <GlassCard variant="default" glow="subtle" className="flex-1 flex flex-col overflow-hidden min-h-0">
+          {/* Chat - scrollable */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <ChatDisplay messages={messages} className="h-full" />
           </div>
 
-          {/* Voice orb */}
-          <div className="p-6 border-t border-white/5">
-            <div className="flex justify-center">
+          {/* Voice orb - fixed height */}
+          <div className="shrink-0 p-6 pt-4 border-t border-white/5">
+            <div className="flex justify-center pb-4">
               <VoiceOrb
                 status={status}
                 isRecording={isRecording}
