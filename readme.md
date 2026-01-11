@@ -214,7 +214,7 @@ Factors affecting connection:
          │              │              │              │
          ▼              ▼              ▼              ▼
     ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │ Deepgram│   │ Gemini  │   │ElevenLabs│   │ Session │
+    │ Deepgram│   │ Gemini  │   │ElevenLabs│  │ Session │
     │   API   │   │   API   │   │   API   │   │ Manager │
     │ (STT)   │   │  (LLM)  │   │  (TTS)  │   │         │
     └─────────┘   └─────────┘   └─────────┘   └─────────┘
@@ -864,3 +864,4 @@ This project was created for SBHacks XII.
 ---
 
 For detailed backend documentation, see [orator-backend/README.md](./orator-backend/README.md)
+
