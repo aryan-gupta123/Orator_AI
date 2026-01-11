@@ -59,7 +59,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   const handleIncomingMessage = useCallback((message: IncomingMessage) => {
     switch (message.type) {
-      case "transcript":
+      case "transcript": {
         const newMessage: ChatMessage = {
           id: generateId(),
           speaker: message.data.speaker,
@@ -68,12 +68,22 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         };
         setMessages((prev) => [...prev, newMessage]);
         break;
+      }
+
+      case "audio": {
+        console.log("🔊 Playing audio, length:", message.data.length);
+        playAudioFromBase64(message.data);
+        break;
+      }
+
       case "video":
         setCurrentVideo(message.data);
         break;
+
       case "coach":
         setCoachFeedback({ ...message.data, timestamp: new Date() });
         break;
+
       case "status":
         setStatus(message.data);
         break;
@@ -203,3 +213,25 @@ export function useWebSocket() {
   if (!context) throw new Error("useWebSocket must be used within WebSocketProvider");
   return context;
 }
+function playAudioFromBase64(base64: string) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  const blob = new Blob([bytes], { type: "audio/mpeg" });
+  const url = URL.createObjectURL(blob);
+
+  const audio = new Audio(url);
+  audio.volume = 1.0;
+  audio.muted = false;
+
+  audio.onended = () => URL.revokeObjectURL(url);
+
+  audio.play().catch(err => {
+    console.error("❌ Audio playback failed:", err);
+  });
+}
+

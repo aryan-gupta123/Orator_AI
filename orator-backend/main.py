@@ -86,6 +86,7 @@ async def send_transcript(sid: str, speaker: str, text: str):
 
 async def send_audio(sid: str, audio_base64: str):
     """Send audio to client."""
+    print(f"Sending audio to client: {len(audio_base64)} bytes")
     await sio.emit("message", {"type": "audio", "data": audio_base64}, room=sid)
 
 async def send_coach(sid: str, feedback: dict):

@@ -147,17 +147,25 @@ function WebSocketProvider({ children }) {
     const handleIncomingMessage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((message)=>{
         switch(message.type){
             case "transcript":
-                const newMessage = {
-                    id: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["generateId"])(),
-                    speaker: message.data.speaker,
-                    text: message.data.text,
-                    timestamp: new Date()
-                };
-                setMessages((prev)=>[
-                        ...prev,
-                        newMessage
-                    ]);
-                break;
+                {
+                    const newMessage = {
+                        id: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["generateId"])(),
+                        speaker: message.data.speaker,
+                        text: message.data.text,
+                        timestamp: new Date()
+                    };
+                    setMessages((prev)=>[
+                            ...prev,
+                            newMessage
+                        ]);
+                    break;
+                }
+            case "audio":
+                {
+                    console.log("🔊 Playing audio, length:", message.data.length);
+                    playAudioFromBase64(message.data);
+                    break;
+                }
             case "video":
                 setCurrentVideo(message.data);
                 break;
@@ -316,7 +324,7 @@ function WebSocketProvider({ children }) {
         children: children
     }, void 0, false, {
         fileName: "[project]/src/context/WebSocketContext.tsx",
-        lineNumber: 176,
+        lineNumber: 186,
         columnNumber: 5
     }, this);
 }
@@ -324,6 +332,26 @@ function useWebSocket() {
     const context = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useContext"])(WebSocketContext);
     if (!context) throw new Error("useWebSocket must be used within WebSocketProvider");
     return context;
+}
+function playAudioFromBase64(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for(let i = 0; i < binary.length; i++){
+        bytes[i] = binary.charCodeAt(i);
+    }
+    const blob = new Blob([
+        bytes
+    ], {
+        type: "audio/mpeg"
+    });
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.volume = 1.0;
+    audio.muted = false;
+    audio.onended = ()=>URL.revokeObjectURL(url);
+    audio.play().catch((err)=>{
+        console.error("❌ Audio playback failed:", err);
+    });
 }
 }),
 ];
