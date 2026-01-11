@@ -1,0 +1,11 @@
+[00:00:01.402] Server  LOG     ✓ Ready in 1241ms
+[00:00:12.662] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:12.730] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:00:13.696] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:00:14.876] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:00:19.884] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:00:24.888] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:00:29.891] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:07:49.161] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:49.161] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
+[00:07:50.411] Browser ERROR   Connection error: {"description":{"isTrusted":true},"type":"TransportError"}
