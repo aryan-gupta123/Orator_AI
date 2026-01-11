@@ -1,0 +1,165 @@
+[00:00:00.926] Server  LOG     ✓ Ready in 723ms
+[00:00:01.979] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:02.130] Browser LOG     Received message type: status
+[00:00:02.130] Browser LOG     WebSocket connected
+[00:00:25.525] Browser LOG     WebSocket disconnected
+[00:00:36.264] Browser LOG     Received message type: status
+[00:00:36.265] Browser LOG     WebSocket connected
+[00:01:03.128] Browser LOG     Received message type: status
+[00:01:03.665] Browser LOG     Received message type: transcript
+[00:01:03.665] Browser LOG     Received message type: status
+[00:01:03.913] Browser LOG     Received message type: transcript
+[00:01:03.913] Browser LOG     Received message type: status
+[00:02:22.525] Browser LOG     WebSocket disconnected
+[00:02:37.526] Browser LOG     Received message type: status
+[00:02:37.527] Browser LOG     WebSocket connected
+[00:02:55.588] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:55.798] Browser LOG     Received message type: status
+[00:02:55.798] Browser LOG     WebSocket connected
+[00:03:18.384] Browser LOG     Received message type: status
+[00:03:19.348] Browser LOG     Received message type: transcript
+[00:03:19.348] Browser LOG     Received message type: status
+[00:03:19.597] Browser LOG     Received message type: transcript
+[00:03:19.597] Browser LOG     Received message type: status
+[00:03:20.108] Browser LOG     Received message type: audio
+[00:03:20.108] Browser LOG     Received audio, length: 64148
+[00:03:20.108] Browser LOG     Received message type: status
+[00:03:20.108] Browser LOG     Playing audio...
+[00:03:20.108] Browser LOG     Received audio to play, length: 64148
+[00:03:20.108] Browser LOG     Audio started playing
+[00:03:20.108] Browser LOG     Audio play() succeeded
+[00:03:23.205] Browser LOG     Audio finished playing
+[00:04:04.525] Browser LOG     WebSocket disconnected
+[00:04:15.528] Browser LOG     Received message type: status
+[00:04:15.528] Browser LOG     WebSocket connected
+[00:04:19.542] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:19.708] Browser LOG     Received message type: status
+[00:04:19.708] Browser LOG     WebSocket connected
+[00:04:32.586] Browser LOG     Received message type: status
+[00:04:33.181] Browser LOG     Received message type: transcript
+[00:04:33.181] Browser LOG     Received message type: status
+[00:04:34.300] Browser LOG     Received message type: transcript
+[00:04:34.300] Browser LOG     Received message type: status
+[00:04:35.738] Browser LOG     Received message type: audio
+[00:04:35.738] Browser LOG     Received audio, length: 437524
+[00:04:35.738] Browser LOG     Received message type: status
+[00:04:35.738] Browser LOG     Playing audio...
+[00:04:35.738] Browser LOG     Received audio to play, length: 437524
+[00:04:35.738] Browser LOG     Audio started playing
+[00:04:35.738] Browser LOG     Audio play() succeeded
+[00:04:56.350] Browser LOG     Audio finished playing
+[00:05:44.315] Browser LOG     Received message type: status
+[00:05:44.737] Browser LOG     Received message type: transcript
+[00:05:44.737] Browser LOG     Received message type: status
+[00:05:44.911] Browser LOG     Received message type: transcript
+[00:05:44.911] Browser LOG     Received message type: status
+[00:05:45.427] Browser LOG     Received message type: audio
+[00:05:45.427] Browser LOG     Received audio, length: 69164
+[00:05:45.427] Browser LOG     Received message type: status
+[00:05:45.427] Browser LOG     Playing audio...
+[00:05:45.427] Browser LOG     Received audio to play, length: 69164
+[00:05:45.427] Browser LOG     Audio started playing
+[00:05:45.427] Browser LOG     Audio play() succeeded
+[00:05:48.758] Browser LOG     Audio finished playing
+[00:06:19.528] Browser LOG     WebSocket disconnected
+[00:06:22.984] Browser LOG     Received message type: status
+[00:06:22.984] Browser LOG     WebSocket connected
+[00:06:23.958] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:24.164] Browser LOG     Received message type: status
+[00:06:24.164] Browser LOG     WebSocket connected
+[00:06:31.007] Browser LOG     Received message type: status
+[00:06:31.322] Browser LOG     Received message type: transcript
+[00:06:31.322] Browser LOG     Received message type: status
+[00:06:32.114] Browser LOG     Received message type: transcript
+[00:06:32.114] Browser LOG     Received message type: status
+[00:06:33.201] Browser LOG     Received message type: audio
+[00:06:33.202] Browser LOG     Received audio, length: 499384
+[00:06:33.202] Browser LOG     Received message type: status
+[00:06:33.202] Browser LOG     Playing audio...
+[00:06:33.202] Browser LOG     Received audio to play, length: 499384
+[00:06:33.202] Browser LOG     Audio started playing
+[00:06:33.202] Browser LOG     Audio play() succeeded
+[00:06:56.677] Browser LOG     Audio finished playing
+[00:07:59.761] Browser LOG     Received message type: status
+[00:08:00.634] Browser LOG     Received message type: transcript
+[00:08:00.634] Browser LOG     Received message type: status
+[00:08:01.670] Browser LOG     Received message type: coach
+[00:08:01.670] Browser LOG     Received message type: transcript
+[00:08:01.670] Browser LOG     Received message type: status
+[00:08:02.555] Browser LOG     Received message type: audio
+[00:08:02.555] Browser LOG     Received audio, length: 254736
+[00:08:02.555] Browser LOG     Received message type: status
+[00:08:02.555] Browser LOG     Playing audio...
+[00:08:02.555] Browser LOG     Received audio to play, length: 254736
+[00:08:02.555] Browser LOG     Audio started playing
+[00:08:02.555] Browser LOG     Audio play() succeeded
+[00:08:14.587] Browser LOG     Audio finished playing
+[00:08:45.680] Browser LOG     Received message type: status
+[00:08:45.842] Browser LOG     Received message type: transcript
+[00:08:45.842] Browser LOG     Received message type: status
+[00:08:46.372] Browser LOG     Received message type: audio
+[00:08:46.372] Browser LOG     Received audio, length: 75292
+[00:08:46.372] Browser LOG     Playing audio...
+[00:08:46.372] Browser LOG     Received audio to play, length: 75292
+[00:08:46.372] Browser LOG     Audio started playing
+[00:08:46.372] Browser LOG     Audio play() succeeded
+[00:08:50.018] Browser LOG     Audio finished playing
+[00:08:51.457] Browser LOG     Received message type: status
+[00:08:51.457] Browser LOG     Received message type: transcript
+[00:08:51.457] Browser LOG     Received message type: status
+[00:08:52.026] Browser LOG     Received message type: audio
+[00:08:52.026] Browser LOG     Received audio, length: 60248
+[00:08:52.026] Browser LOG     Playing audio...
+[00:08:52.026] Browser LOG     Received audio to play, length: 60248
+[00:08:52.026] Browser LOG     Audio started playing
+[00:08:52.026] Browser LOG     Audio play() succeeded
+[00:10:32.524] Browser LOG     WebSocket disconnected
+[00:10:44.999] Browser LOG     Received message type: status
+[00:10:44.999] Browser LOG     WebSocket connected
+[00:10:49.546] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:49.712] Browser LOG     Received message type: status
+[00:10:49.713] Browser LOG     WebSocket connected
+[00:11:00.564] Browser LOG     Received message type: status
+[00:11:00.818] Browser LOG     Received message type: transcript
+[00:11:00.818] Browser LOG     Received message type: status
+[00:11:01.282] Browser LOG     Received message type: audio
+[00:11:01.282] Browser LOG     Received audio, length: 71948
+[00:11:01.282] Browser LOG     Playing audio...
+[00:11:01.282] Browser LOG     Received audio to play, length: 71948
+[00:11:01.282] Browser LOG     Audio started playing
+[00:11:01.282] Browser LOG     Audio play() succeeded
+[00:12:56.524] Browser LOG     WebSocket disconnected
+[00:13:04.885] Browser LOG     Received message type: status
+[00:13:04.885] Browser LOG     WebSocket connected
+[00:13:09.573] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:09.745] Browser LOG     Received message type: status
+[00:13:09.745] Browser LOG     WebSocket connected
+[00:13:14.948] Browser LOG     Received message type: status
+[00:13:16.351] Browser LOG     Received message type: transcript
+[00:13:16.351] Browser LOG     Received message type: status
+[00:13:17.844] Browser LOG     Received message type: audio
+[00:13:17.844] Browser LOG     Received audio, length: 668796
+[00:13:17.844] Browser LOG     Playing audio...
+[00:13:17.844] Browser LOG     Received audio to play, length: 668796
+[00:13:17.844] Browser LOG     Audio started playing
+[00:13:17.844] Browser LOG     Audio play() succeeded
+[00:13:22.777] Browser LOG     Received message type: status
+[00:13:22.916] Browser LOG     Received message type: transcript
+[00:13:22.916] Browser LOG     Received message type: status
+[00:13:23.412] Browser LOG     Received message type: audio
+[00:13:23.412] Browser LOG     Received audio, length: 65264
+[00:13:23.412] Browser LOG     Playing audio...
+[00:13:23.412] Browser LOG     Received audio to play, length: 65264
+[00:13:23.412] Browser LOG     Audio started playing
+[00:13:23.412] Browser LOG     Audio play() succeeded
+[00:13:26.535] Browser LOG     Audio finished playing
+[00:13:28.464] Browser LOG     Received message type: status
+[00:13:28.464] Browser LOG     Received message type: transcript
+[00:13:28.464] Browser LOG     Received message type: status
+[00:13:29.023] Browser LOG     Received message type: audio
+[00:13:29.023] Browser LOG     Received audio, length: 76964
+[00:13:29.023] Browser LOG     Playing audio...
+[00:13:29.023] Browser LOG     Received audio to play, length: 76964
+[00:13:29.023] Browser LOG     Audio started playing
+[00:13:29.023] Browser LOG     Audio play() succeeded
+[00:13:47.278] Browser LOG     WebSocket disconnected
