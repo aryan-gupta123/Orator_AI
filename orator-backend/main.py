@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 # Load environment variables first
 load_dotenv()
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 
@@ -23,7 +23,6 @@ from prompts.system_prompts import (
     get_sandbox_prompt,
     get_dojo_prompts,
     get_arena_prompts,
-    SANDBOX_PERSONAS
 )
 
 # ============================================================
@@ -66,6 +65,10 @@ socket_app = socketio.ASGIApp(sio, app)
 # Session management
 session_manager = SessionManager()
 
+# Audio buffer for accumulating chunks (session_id -> bytes)
+audio_buffers: dict[str, bytearray] = {}
+audio_tasks: dict[str, asyncio.Task] = {}
+
 # ============================================================
 # HELPER FUNCTIONS
 # ============================================================
@@ -89,20 +92,37 @@ async def send_coach(sid: str, feedback: dict):
     """Send coach feedback to client."""
     await sio.emit("message", {"type": "coach", "data": feedback}, room=sid)
 
-async def process_user_audio(sid: str, audio_base64: str, session: Session):
-    """Process incoming audio: transcribe -> respond -> speak."""
+
+async def process_audio_buffer(sid: str):
+    """Process accumulated audio buffer after silence."""
+    await asyncio.sleep(1.5)  # Wait for 1.5 seconds of silence
+    
+    if sid not in audio_buffers or len(audio_buffers[sid]) < 1000:
+        return
+    
+    session = session_manager.get(sid)
+    if not session:
+        return
+    
+    # Get and clear the buffer
+    audio_data = bytes(audio_buffers[sid])
+    audio_buffers[sid] = bytearray()
+    
+    print(f"Processing {len(audio_data)} bytes of audio for {sid}")
+    
     try:
-        # Decode audio
-        audio_bytes = base64.b64decode(audio_base64)
-        
         # Update status
         await send_status(sid, "listening")
         
         # Transcribe with Deepgram
-        transcript = await deepgram_service.transcribe(audio_bytes)
+        transcript = await deepgram_service.transcribe(audio_data)
         
         if not transcript:
+            print("No transcript returned")
+            await send_status(sid, "idle")
             return
+        
+        print(f"Transcript: {transcript}")
         
         # Send user transcript to frontend
         await send_transcript(sid, "user", transcript)
@@ -114,12 +134,10 @@ async def process_user_audio(sid: str, audio_base64: str, session: Session):
         # Generate response based on mode
         if session.mode == "sandbox":
             response = await handle_sandbox_response(session, transcript)
-            speaker = "ai"
             voice = elevenlabs_service.get_voice_for_persona(session.persona_id)
             
         elif session.mode == "dojo":
             response, coach_feedback = await handle_dojo_response(session, transcript)
-            speaker = "ai"
             voice = "professional"
             
             # Send coach feedback
@@ -128,15 +146,16 @@ async def process_user_audio(sid: str, audio_base64: str, session: Session):
                 
         else:  # arena - user barged in
             response = await handle_arena_barge_in(session, transcript)
-            speaker = "ai"
             voice = "default"
         
         if not response:
             await send_status(sid, "idle")
             return
         
+        print(f"AI Response: {response}")
+        
         # Send AI transcript
-        await send_transcript(sid, speaker, response)
+        await send_transcript(sid, "ai", response)
         session.add_message("assistant", response)
         
         # Generate and send audio
@@ -150,7 +169,10 @@ async def process_user_audio(sid: str, audio_base64: str, session: Session):
         
     except Exception as e:
         print(f"Error processing audio: {e}")
+        import traceback
+        traceback.print_exc()
         await send_status(sid, "idle")
+
 
 async def handle_sandbox_response(session: Session, user_message: str) -> str:
     """Generate response for sandbox mode."""
@@ -164,6 +186,7 @@ async def handle_sandbox_response(session: Session, user_message: str) -> str:
     
     return response
 
+
 async def handle_dojo_response(session: Session, user_message: str) -> tuple[str, dict]:
     """Generate response and coach feedback for dojo mode."""
     system_prompt, coach_prompt = get_dojo_prompts(session.scenario_id)
@@ -175,7 +198,7 @@ async def handle_dojo_response(session: Session, user_message: str) -> tuple[str
         history=session.get_history_for_llm()
     )
     
-    # Generate coach feedback (in parallel would be better, but keeping simple)
+    # Generate coach feedback
     coach_feedback = await gemini_service.generate_coach_feedback(
         user_message=user_message,
         coach_prompt=coach_prompt,
@@ -184,10 +207,9 @@ async def handle_dojo_response(session: Session, user_message: str) -> tuple[str
     
     return response, coach_feedback
 
+
 async def handle_arena_barge_in(session: Session, user_message: str) -> str:
     """Handle user intervention in arena debate."""
-    # Simple acknowledgment - in a full implementation, this would
-    # integrate into the debate flow
     response = await gemini_service.generate_response(
         user_message=user_message,
         system_prompt="""The user has intervened in an AI debate to share their opinion.
@@ -196,6 +218,7 @@ Be respectful and engaging. Keep it to 2 sentences.""",
         history=[]
     )
     return response
+
 
 async def run_arena_debate(sid: str, session: Session):
     """Run the arena debate loop."""
@@ -225,11 +248,11 @@ async def run_arena_debate(sid: str, session: Session):
     if audio:
         await send_audio(sid, audio)
     
-    await asyncio.sleep(1)  # Brief pause between speakers
+    await asyncio.sleep(1)
     
     last_statement = opening
     turn = 0
-    max_turns = 10  # Limit debate length
+    max_turns = 10
     
     while session.arena_is_running and turn < max_turns:
         turn += 1
@@ -287,6 +310,7 @@ async def run_arena_debate(sid: str, session: Session):
     session.arena_is_running = False
     await send_status(sid, "idle")
 
+
 # ============================================================
 # SOCKET.IO EVENT HANDLERS
 # ============================================================
@@ -295,7 +319,8 @@ async def run_arena_debate(sid: str, session: Session):
 async def connect(sid, environ):
     """Handle new client connection."""
     print(f"Client connected: {sid}")
-    session = session_manager.get_or_create(sid)
+    session_manager.get_or_create(sid)
+    audio_buffers[sid] = bytearray()
     await send_status(sid, "idle")
 
 @sio.event
@@ -304,8 +329,13 @@ async def disconnect(sid):
     print(f"Client disconnected: {sid}")
     session = session_manager.get(sid)
     if session:
-        session.arena_is_running = False  # Stop any running debate
+        session.arena_is_running = False
     session_manager.remove(sid)
+    audio_buffers.pop(sid, None)
+    # Cancel any pending audio processing
+    if sid in audio_tasks:
+        audio_tasks[sid].cancel()
+        audio_tasks.pop(sid, None)
 
 @sio.event
 async def message(sid, data):
@@ -314,17 +344,31 @@ async def message(sid, data):
     msg_type = data.get("type")
     msg_data = data.get("data")
     
-    print(f"Message from {sid}: type={msg_type}")
-    
     if msg_type == "audio":
-        # Process audio in background to not block
-        asyncio.create_task(process_user_audio(sid, msg_data, session))
+        # Decode and accumulate audio
+        try:
+            audio_bytes = base64.b64decode(msg_data)
+            
+            if sid not in audio_buffers:
+                audio_buffers[sid] = bytearray()
+            
+            audio_buffers[sid].extend(audio_bytes)
+            
+            # Cancel existing timer and start new one
+            if sid in audio_tasks:
+                audio_tasks[sid].cancel()
+            
+            # Start new timer to process after silence
+            audio_tasks[sid] = asyncio.create_task(process_audio_buffer(sid))
+            
+        except Exception as e:
+            print(f"Error handling audio: {e}")
     
     elif msg_type == "mode":
         session.set_mode(msg_data)
+        audio_buffers[sid] = bytearray()  # Clear audio buffer
         print(f"Session {sid} mode changed to: {msg_data}")
         
-        # Set default scenario/persona for the mode
         if msg_data == "sandbox":
             session.persona_id = "friend"
         elif msg_data == "dojo":
@@ -344,7 +388,6 @@ async def message(sid, data):
         print(f"Session {sid} persona changed to: {persona}")
     
     elif msg_type == "barge_in":
-        # Stop the debate loop
         session.arena_is_running = False
         print(f"Session {sid} barged into debate")
     
@@ -356,6 +399,7 @@ async def message(sid, data):
     elif msg_type == "stop_debate":
         session.arena_is_running = False
 
+
 # ============================================================
 # REST ENDPOINTS
 # ============================================================
@@ -363,11 +407,7 @@ async def message(sid, data):
 @app.get("/")
 async def root():
     """Health check endpoint."""
-    return {
-        "status": "ok",
-        "service": "Orator API",
-        "version": "1.0.0"
-    }
+    return {"status": "ok", "service": "Orator API", "version": "1.0.0"}
 
 @app.get("/health")
 async def health():
@@ -379,9 +419,6 @@ async def health():
         "elevenlabs": "configured" if os.getenv("ELEVENLABS_API_KEY") else "missing",
     }
 
-# ============================================================
-# RUN SERVER
-# ============================================================
 
 # Use the Socket.IO ASGI app as the main app
 app = socket_app
@@ -389,9 +426,4 @@ app = socket_app
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=port,
-        reload=True
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

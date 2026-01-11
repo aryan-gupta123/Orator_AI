@@ -4,7 +4,6 @@ Gemini service for AI conversation logic.
 import os
 import json
 import google.generativeai as genai
-from typing import Optional, AsyncGenerator
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -15,9 +14,9 @@ class GeminiService:
     """Handles AI conversations using Google Gemini."""
     
     def __init__(self):
-        # Use Gemini 1.5 Flash for speed
+        # Use gemini-1.5-flash-latest for the latest version
         self.model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.5-flash-lite",
             generation_config={
                 "temperature": 0.8,
                 "top_p": 0.95,
@@ -28,7 +27,7 @@ class GeminiService:
         
         # Separate model for coach analysis (more deterministic)
         self.coach_model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.5-flash-lite",
             generation_config={
                 "temperature": 0.3,
                 "top_p": 0.9,
@@ -44,20 +43,9 @@ class GeminiService:
     ) -> str:
         """
         Generate a conversational response.
-        
-        Args:
-            user_message: The user's message
-            system_prompt: System instructions for the AI
-            history: Previous conversation history
-            
-        Returns:
-            AI response text
         """
         try:
-            # Build the conversation
-            chat = self.model.start_chat(history=history or [])
-            
-            # Combine system prompt with user message for context
+            # Combine system prompt with user message
             full_prompt = f"""[SYSTEM INSTRUCTIONS]
 {system_prompt}
 
@@ -67,7 +55,7 @@ class GeminiService:
 Respond naturally and conversationally. Keep your response concise (2-4 sentences unless more detail is needed)."""
 
             # Generate response
-            response = await chat.send_message_async(full_prompt)
+            response = self.model.generate_content(full_prompt)
             
             return response.text.strip()
             
@@ -83,14 +71,6 @@ Respond naturally and conversationally. Keep your response concise (2-4 sentence
     ) -> dict:
         """
         Generate coach feedback on user's communication.
-        
-        Args:
-            user_message: What the user said
-            coach_prompt: Instructions for the coach
-            context: Additional context about the conversation
-            
-        Returns:
-            Dict with sentiment, advice, and score
         """
         try:
             prompt = f"""{coach_prompt}
@@ -102,7 +82,7 @@ User just said: "{user_message}"
 Analyze this and respond with ONLY valid JSON (no markdown, no explanation):
 {{"sentiment": "string", "advice": "string", "score": number}}"""
 
-            response = await self.coach_model.generate_content_async(prompt)
+            response = self.coach_model.generate_content(prompt)
             text = response.text.strip()
             
             # Clean up response - remove markdown code blocks if present
@@ -121,7 +101,6 @@ Analyze this and respond with ONLY valid JSON (no markdown, no explanation):
                     "score": min(100, max(0, int(feedback.get("score", 70))))
                 }
             except json.JSONDecodeError:
-                # Fallback if JSON parsing fails
                 return {
                     "sentiment": "neutral",
                     "advice": "Keep the conversation going!",
@@ -145,15 +124,6 @@ Analyze this and respond with ONLY valid JSON (no markdown, no explanation):
     ) -> str:
         """
         Generate a debate response for Arena mode.
-        
-        Args:
-            opponent_message: What the opponent just said
-            system_prompt: This debater's persona and stance
-            topic: The debate topic
-            history: Previous debate exchanges
-            
-        Returns:
-            Debate response text
         """
         try:
             prompt = f"""{system_prompt}
@@ -165,7 +135,7 @@ Your opponent just said: "{opponent_message}"
 Respond with a strong counter-argument or rebuttal. Be passionate but respectful.
 Keep it to 2-3 sentences. Make it punchy and quotable."""
 
-            response = await self.model.generate_content_async(prompt)
+            response = self.model.generate_content(prompt)
             return response.text.strip()
             
         except Exception as e:
