@@ -1,0 +1,14 @@
+{
+  "backend_tests": 30,
+  "backend_tests_passed": 30,
+  "typecheck": "passed",
+  "production_build": "passed",
+  "final_browser_flow": "passed",
+  "browser_js_errors": 0,
+  "running_provider": "local",
+  "model": "qwen2.5-1.5b-instruct",
+  "speech_recognition": "faster-whisper tiny.en",
+  "gemini_live_before_quota": "transcription, conversation, coaching passed",
+  "gemini_current_limit": "HTTP 429 observed; no automatic retries",
+  "human_microphone_or_speaker_test": false
+}

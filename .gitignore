@@ -19,3 +19,6 @@ backend/.env/
 .env.local.previous
 
 *.tsbuildinfo
+
+# This workspace helper contains machine-specific cache paths.
+scripts/workspace-local.sh

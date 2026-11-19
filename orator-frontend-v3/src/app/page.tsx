@@ -16,13 +16,19 @@ import { Wifi, WifiOff, Volume2, VolumeX } from "lucide-react";
 
 export default function Home() {
   const {
+    providerLabel,
     isConnected,
     connectionError,
+    actionError,
+    notice,
+    sendText,
+    playbackFinished,
+    isDebateRunning,
     status,
     mode,
     messages,
     coachFeedback,
-    latestAudio,
+    latestSpeech,
     sendAudio,
     setMode,
     setScenario,
@@ -32,101 +38,94 @@ export default function Home() {
     joinDebate,
     leaveDebate,
     clearMessages,
-    clearLatestAudio,
+    clearLatestSpeech,
     connect,
   } = useWebSocket();
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioType | null>("salary_hard");
-  const [isDebateRunning, setIsDebateRunning] = useState(false);
+  const [draft, setDraft] = useState("");
   const [activeSpeaker, setActiveSpeaker] = useState<"ai_a" | "ai_b" | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [debateTopic, setDebateTopic] = useState("");
   const [userJoinedSide, setUserJoinedSide] = useState<"pro" | "con" | null>(null);
 
-  const { queueAudio, stopAudio } = useAudioPlayer();
+  const { playSpeech, stopAudio, error: playbackError } = useAudioPlayer();
 
   const {
     isRecording,
     error: recordingError,
     startRecording,
     stopRecording,
-    hasPermission,
-    requestPermission,
-  } = useAudioRecorder({
-    onAudioData: (base64) => {
-      if (!isMuted) sendAudio(base64);
-    },
-  });
+    cancelRecording,
+  } = useAudioRecorder({ onAudioData: sendAudio });
 
-  // Connect on mount
-  useEffect(() => {
-    connect();
-  }, [connect]);
+  useEffect(() => { connect(); }, [connect]);
 
-  // Play audio when received
   useEffect(() => {
-    if (latestAudio) {
-      console.log("Playing audio...");
-      if (!isMuted) {
-        queueAudio(latestAudio);
-      }
-      clearLatestAudio();
-    }
-  }, [latestAudio, queueAudio, clearLatestAudio, isMuted]);
+    if (!latestSpeech) return;
+    if (isMuted) playbackFinished(latestSpeech.id);
+    else playSpeech(latestSpeech, () => playbackFinished(latestSpeech.id));
+    clearLatestSpeech();
+  }, [latestSpeech, isMuted, playSpeech, playbackFinished, clearLatestSpeech]);
+
+  useEffect(() => { if (isMuted) stopAudio(); }, [isMuted, stopAudio]);
+  useEffect(() => {
+    if (!isConnected) { cancelRecording(); stopAudio(); }
+  }, [isConnected, cancelRecording, stopAudio]);
 
   // Handle mode change
   const handleModeChange = useCallback((newMode: AppMode) => {
+    setDraft("");
     setMode(newMode);
-    setIsDebateRunning(false);
     setActiveSpeaker(null);
     setDebateTopic("");
     setUserJoinedSide(null);
-    if (isRecording) stopRecording();
-  }, [setMode, isRecording, stopRecording]);
+    cancelRecording();
+    setCurrentScenario("salary_hard");
+    stopAudio();
+  }, [setMode, cancelRecording, stopAudio]);
 
   // Handle recording
   const handleStartRecording = useCallback(async () => {
-    if (!hasPermission) {
-      const granted = await requestPermission();
-      if (!granted) return;
-    }
+    if (!isConnected || status !== "idle") return;
+    stopAudio();
     await startRecording();
-  }, [hasPermission, requestPermission, startRecording]);
+  }, [isConnected, status, stopAudio, startRecording]);
 
   // Handle reset
   const handleReset = useCallback(() => {
+    setDraft("");
     clearMessages();
-    setIsDebateRunning(false);
     setActiveSpeaker(null);
     setDebateTopic("");
     setUserJoinedSide(null);
     stopAudio();
-    if (isRecording) stopRecording();
-  }, [clearMessages, stopAudio, isRecording, stopRecording]);
+    cancelRecording();
+  }, [clearMessages, stopAudio, cancelRecording]);
 
   // Handle scenario change
   const handleScenarioChange = useCallback((scenario: ScenarioType) => {
     setCurrentScenario(scenario);
     setScenario(scenario);
-    handleReset();
-  }, [setScenario, handleReset]);
+    cancelRecording();
+    stopAudio();
+  }, [setScenario, cancelRecording, stopAudio]);
 
   // Handle persona change (Sandbox)
   const handlePersonaChange = useCallback((persona: SandboxPersona) => {
-    setSandboxConfig(persona.systemPrompt, "");
-    handleReset();
-  }, [setSandboxConfig, handleReset]);
+    setSandboxConfig(persona.id, "");
+    cancelRecording();
+    stopAudio();
+  }, [setSandboxConfig, cancelRecording, stopAudio]);
 
   // Arena controls
   const handleStartDebate = useCallback((topic: string) => {
     setDebateTopic(topic);
-    setIsDebateRunning(true);
     setActiveSpeaker("ai_a");
     startDebate(topic);
   }, [startDebate]);
 
   const handlePauseDebate = useCallback(() => {
-    setIsDebateRunning(false);
     setUserJoinedSide(null);
     stopDebate();
     stopAudio();
@@ -134,14 +133,15 @@ export default function Home() {
 
   const handleJoinSide = useCallback((side: "pro" | "con") => {
     setUserJoinedSide(side);
+    stopAudio();
     joinDebate(side);
-  }, [joinDebate]);
+  }, [joinDebate, stopAudio]);
 
   const handleLeaveSide = useCallback(() => {
     setUserJoinedSide(null);
     leaveDebate();
-    if (isRecording) stopRecording();
-  }, [leaveDebate, isRecording, stopRecording]);
+    cancelRecording();
+  }, [leaveDebate, cancelRecording]);
 
   // Update active speaker based on messages
   useEffect(() => {
@@ -202,6 +202,7 @@ export default function Home() {
           >
             {/* Mute toggle */}
             <button
+              aria-label={isMuted ? "Unmute responses" : "Mute responses"}
               onClick={() => setIsMuted(!isMuted)}
               className={cn(
                 "p-2.5 rounded-xl transition-all",
@@ -238,19 +239,21 @@ export default function Home() {
 
         {/* Error banner */}
         <AnimatePresence>
-          {(connectionError || recordingError) && (
+          {(connectionError || actionError || recordingError || playbackError) && (
             <motion.div
               initial={{ opacity: 0, y: -10, height: 0 }}
               animate={{ opacity: 1, y: 0, height: "auto" }}
               exit={{ opacity: 0, y: -10, height: 0 }}
               className="mx-6"
             >
-              <div className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
-                {connectionError || recordingError}
+              <div role="alert" className="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
+                {connectionError || actionError || recordingError || playbackError}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {notice && <p role="status" className="mx-6 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">{notice}</p>}
 
         {/* Main view */}
         <main className="flex-1 p-6 min-h-0">
@@ -314,19 +317,34 @@ export default function Home() {
           </AnimatePresence>
         </main>
 
+        {(mode !== "arena" || userJoinedSide) && (
+          <form className="mx-6 mb-5 flex gap-3" onSubmit={event => {
+            event.preventDefault();
+            if (!draft.trim() || !isConnected || status !== "idle" || isRecording) return;
+            sendText(draft.trim()); setDraft("");
+          }}>
+            <input aria-label="Your message" value={draft} maxLength={4000}
+              onChange={event => setDraft(event.target.value)}
+              placeholder="Or type your message…"
+              className="min-w-0 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500" />
+            <button type="submit" disabled={!draft.trim() || !isConnected || status !== "idle" || isRecording}
+              className="rounded-xl bg-violet-600 px-5 py-3 font-medium text-white disabled:opacity-40">Send</button>
+          </form>
+        )}
+
         {/* Footer */}
         <footer className="px-6 py-4 border-t border-white/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-slate-600">
               <span>Powered by</span>
-              <span className="text-slate-400">Deepgram</span>
+              <span className="text-slate-400">Voice or text</span>
               <span>·</span>
-              <span className="text-slate-400">Gemini</span>
+              <span className="text-slate-400">{providerLabel}</span>
               <span>·</span>
-              <span className="text-slate-400">ElevenLabs</span>
+              <span className="text-slate-400">Browser speech</span>
             </div>
             <div className="text-xs text-slate-600">
-              SBHacks 2025
+              Tap the microphone to record; tap again to send
             </div>
           </div>
         </footer>

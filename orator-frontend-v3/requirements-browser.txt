@@ -1,0 +1,2 @@
+# Optional, for tests/browser_live.py with an existing Chromium.
+playwright==1.62.0
