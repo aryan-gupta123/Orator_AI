@@ -146,8 +146,10 @@ export function ArenaView({
           {/* Topic input */}
           <div className="flex items-center gap-2">
             <input
+              aria-label="Debate topic"
+              maxLength={500}
               type="text"
-              value={debateTopic || topicInput}
+              value={topicInput}
               onChange={(e) => setTopicInput(e.target.value)}
               disabled={isDebateRunning}
               placeholder="Enter a debate topic..."

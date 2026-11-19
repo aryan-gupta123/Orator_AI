@@ -3,84 +3,25 @@
 export type AppMode = 'sandbox' | 'dojo' | 'arena';
 export type AppStatus = 'idle' | 'listening' | 'thinking' | 'speaking';
 
-// Frontend -> Backend
-export interface AudioMessage {
-  type: 'audio';
-  data: string;
-}
+// Complete client/server protocol. Keep this in sync with backend message handling.
+export type OutgoingMessage =
+  | { type: 'audio'; data: { audio: string; mimeType: string } }
+  | { type: 'text' | 'playback_finished'; data: string }
+  | { type: 'mode'; data: AppMode }
+  | { type: 'scenario'; data: ScenarioType }
+  | { type: 'sandbox_config'; data: { persona: string; context: string } }
+  | { type: 'start_debate'; data: { topic: string } }
+  | { type: 'join_debate'; data: { side: 'pro' | 'con' } }
+  | { type: 'reset' | 'stop_debate' | 'leave_debate'; data: boolean };
 
-export interface ModeMessage {
-  type: 'mode';
-  data: AppMode;
-}
-
-export interface ScenarioMessage {
-  type: 'scenario';
-  data: ScenarioType;
-}
-
-export interface BargeInMessage {
-  type: 'barge_in';
-  data: boolean;
-}
-
-export interface SandboxConfigMessage {
-  type: 'sandbox_config';
-  data: {
-    persona: string;
-    context: string;
-  };
-}
-
-export type OutgoingMessage = 
-  | AudioMessage 
-  | ModeMessage 
-  | ScenarioMessage 
-  | BargeInMessage
-  | SandboxConfigMessage;
-
-// Backend -> Frontend
-export interface TranscriptMessage {
-  type: 'transcript';
-  data: {
-    speaker: 'user' | 'ai' | 'ai_a' | 'ai_b';
-    text: string;
-  };
-}
-
-export interface IncomingAudioMessage {
-  type: 'audio';
-  data: string;
-}
-
-export interface VideoMessage {
-  type: 'video';
-  data: {
-    videoId: string;
-    timestamp: number;
-  };
-}
-
-export interface CoachMessage {
-  type: 'coach';
-  data: {
-    sentiment: string;
-    advice: string;
-    score: number;
-  };
-}
-
-export interface StatusMessage {
-  type: 'status';
-  data: AppStatus;
-}
-
-export type IncomingMessage = 
-  | TranscriptMessage 
-  | IncomingAudioMessage 
-  | VideoMessage 
-  | CoachMessage 
-  | StatusMessage;
+export type IncomingMessage =
+  | { type: 'configuration'; data: { provider: string; model: string } }
+  | { type: 'transcript'; data: { speaker: 'user' | 'ai' | 'ai_a' | 'ai_b'; text: string } }
+  | { type: 'speech'; data: { id: string; text: string; audio: string | null } }
+  | { type: 'coach'; data: { sentiment: string; advice: string; score: number } }
+  | { type: 'status'; data: AppStatus }
+  | { type: 'error' | 'notice'; data: string }
+  | { type: 'debate_state'; data: boolean };
 
 // Scenario types
 export type ScenarioType = 

@@ -1,0 +1,40 @@
+[
+  {
+    "type": "status",
+    "data": "listening"
+  },
+  {
+    "type": "transcript",
+    "data": {
+      "speaker": "user",
+      "text": "I am nervous about my job interview tomorrow. Can you help me practice?"
+    }
+  },
+  {
+    "type": "status",
+    "data": "thinking"
+  },
+  {
+    "type": "transcript",
+    "data": {
+      "speaker": "ai",
+      "text": "Oh wow, a job interview! That's totally understandable that you're feeling a bit nervous.  Deep breaths, you've got this! I'm happy to help you practice, what kind of questions are you expecting?"
+    }
+  },
+  {
+    "type": "status",
+    "data": "speaking"
+  },
+  {
+    "type": "speech",
+    "data": {
+      "id": "09a51e0adbcdaf77",
+      "text": "Oh wow, a job interview! That's totally understandable that you're feeling a bit nervous.  Deep breaths, you've got this! I'm happy to help you practice, what kind of questions are you expecting?",
+      "audio": null
+    }
+  },
+  {
+    "type": "status",
+    "data": "idle"
+  }
+]

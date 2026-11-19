@@ -1,177 +1,88 @@
-"""
-Gemini service for AI conversation logic.
-"""
-import os
+"""Gemini REST client shared by conversation, coaching, and optional audio input."""
+import base64
 import json
-import google.generativeai as genai
-from typing import Optional, AsyncGenerator
+import math
+import os
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+import httpx
 
-# Configure Gemini
-genai.configure(api_key=GEMINI_API_KEY)
+
+class ProviderError(RuntimeError):
+    """An actionable provider failure safe to show to the user."""
+
 
 class GeminiService:
-    """Handles AI conversations using Google Gemini."""
-    
     def __init__(self):
-        # Use Gemini 1.5 Flash for speed
-        self.model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash-lite",
-            generation_config={
-                "temperature": 0.8,
-                "top_p": 0.95,
-                "top_k": 40,
-                "max_output_tokens": 500,
-            }
-        )
-        
-        # Separate model for coach analysis (more deterministic)
-        self.coach_model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash-lite",
-            generation_config={
-                "temperature": 0.3,
-                "top_p": 0.9,
-                "max_output_tokens": 200,
-            }
-        )
-    
-    async def generate_response(
-        self,
-        user_message: str,
-        system_prompt: str,
-        history: list[dict] = None
-    ) -> str:
-        """
-        Generate a conversational response.
-        
-        Args:
-            user_message: The user's message
-            system_prompt: System instructions for the AI
-            history: Previous conversation history
-            
-        Returns:
-            AI response text
-        """
+        self.api_key = os.getenv("GEMINI_API_KEY", "")
+        self.model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+
+    async def _generate(self, contents, system_prompt="", *, json_output=False):
+        if not self.api_key:
+            raise ProviderError("Set GEMINI_API_KEY on the backend to enable conversations.")
+        config = {"temperature": 0.3 if json_output else 0.7, "maxOutputTokens": 600}
+        if json_output:
+            config["responseMimeType"] = "application/json"
+        payload = {"contents": contents, "generationConfig": config}
+        if system_prompt:
+            payload["systemInstruction"] = {"parts": [{"text": system_prompt}]}
         try:
-            # Build the conversation
-            chat = self.model.start_chat(history=history or [])
-            
-            # Combine system prompt with user message for context
-            full_prompt = f"""[SYSTEM INSTRUCTIONS]
-{system_prompt}
-
-[USER MESSAGE]
-{user_message}
-
-Respond naturally and conversationally. Keep your response concise (2-4 sentences unless more detail is needed)."""
-
-            # Generate response
-            response = await chat.send_message_async(full_prompt)
-            
-            return response.text.strip()
-            
-        except Exception as e:
-            print(f"Gemini generation error: {e}")
-            return "I'm having trouble responding right now. Could you try again?"
-    
-    async def generate_coach_feedback(
-        self,
-        user_message: str,
-        coach_prompt: str,
-        context: str = ""
-    ) -> dict:
-        """
-        Generate coach feedback on user's communication.
-        
-        Args:
-            user_message: What the user said
-            coach_prompt: Instructions for the coach
-            context: Additional context about the conversation
-            
-        Returns:
-            Dict with sentiment, advice, and score
-        """
-        try:
-            prompt = f"""{coach_prompt}
-
-Context: {context}
-
-User just said: "{user_message}"
-
-Analyze this and respond with ONLY valid JSON (no markdown, no explanation):
-{{"sentiment": "string", "advice": "string", "score": number}}"""
-
-            response = await self.coach_model.generate_content_async(prompt)
-            text = response.text.strip()
-            
-            # Clean up response - remove markdown code blocks if present
-            if text.startswith("```"):
-                text = text.split("```")[1]
-                if text.startswith("json"):
-                    text = text[4:]
-            text = text.strip()
-            
-            # Parse JSON
-            try:
-                feedback = json.loads(text)
-                return {
-                    "sentiment": feedback.get("sentiment", "neutral"),
-                    "advice": feedback.get("advice", "Keep going!"),
-                    "score": min(100, max(0, int(feedback.get("score", 70))))
-                }
-            except json.JSONDecodeError:
-                # Fallback if JSON parsing fails
-                return {
-                    "sentiment": "neutral",
-                    "advice": "Keep the conversation going!",
-                    "score": 70
-                }
-                
-        except Exception as e:
-            print(f"Coach feedback error: {e}")
-            return {
-                "sentiment": "neutral", 
-                "advice": "Keep practicing!",
-                "score": 70
+            async with httpx.AsyncClient(timeout=45) as client:
+                response = await client.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
+                    headers={"x-goog-api-key": self.api_key}, json=payload,
+                )
+        except httpx.TimeoutException:
+            raise ProviderError("Gemini timed out. Please try again.") from None
+        except httpx.HTTPError:
+            raise ProviderError("Cannot reach Gemini. Check the backend network connection.") from None
+        if response.status_code != 200:
+            explanations = {
+                400: "Gemini rejected this request. Check the model and recording format.",
+                401: "Gemini authentication failed. Check GEMINI_API_KEY.",
+                403: "Gemini access was denied. Check the API key and project permissions.",
+                404: "Gemini model not found. Check GEMINI_MODEL.",
+                429: "Gemini quota or rate limit reached. Wait before trying again, or check your project's quota.",
             }
-    
-    async def generate_debate_response(
-        self,
-        opponent_message: str,
-        system_prompt: str,
-        topic: str,
-        history: list[dict] = None
-    ) -> str:
-        """
-        Generate a debate response for Arena mode.
-        
-        Args:
-            opponent_message: What the opponent just said
-            system_prompt: This debater's persona and stance
-            topic: The debate topic
-            history: Previous debate exchanges
-            
-        Returns:
-            Debate response text
-        """
+            raise ProviderError(explanations.get(response.status_code, "Gemini is unavailable. Please try again later."))
         try:
-            prompt = f"""{system_prompt}
+            parts = response.json().get("candidates", [{}])[0].get("content", {}).get("parts", [])
+            text = "".join(p.get("text", "") for p in parts if not p.get("thought")).strip()
+        except (ValueError, IndexError, AttributeError, TypeError):
+            text = ""
+        if not text:
+            raise ProviderError("Gemini returned no usable response. Try rephrasing your message.")
+        return text
 
-DEBATE TOPIC: {topic}
+    async def generate_response(self, user_message, system_prompt, history=None):
+        contents = []
+        for item in history or []:
+            contents.append({"role": item["role"], "parts": [
+                {"text": p} if isinstance(p, str) else p for p in item["parts"]
+            ]})
+        contents.append({"role": "user", "parts": [{"text": user_message}]})
+        return await self._generate(contents, system_prompt)
 
-Your opponent just said: "{opponent_message}"
+    async def generate_coach_feedback(self, user_message, coach_prompt, context=""):
+        text = await self._generate([{"role": "user", "parts": [{"text":
+            f"Context: {context}\nUser statement: {user_message}\n"
+            'Return JSON with sentiment (string), advice (string), score (number 0–100).'
+        }]}], coach_prompt, json_output=True)
+        try:
+            data = json.loads(text)
+            score = data["score"]
+            if isinstance(score, bool) or not isinstance(score, (int, float)) or not math.isfinite(score) or not 0 <= score <= 100:
+                raise ValueError
+            if not all(isinstance(data[k], str) and data[k].strip() for k in ("sentiment", "advice")):
+                raise ValueError
+            return {"sentiment": data["sentiment"], "advice": data["advice"], "score": round(score)}
+        except (ValueError, KeyError, TypeError):
+            raise ProviderError("Coaching feedback was invalid. No score was assigned; please try another turn.") from None
 
-Respond with a strong counter-argument or rebuttal. Be passionate but respectful.
-Keep it to 2-3 sentences. Make it punchy and quotable."""
-
-            response = await self.model.generate_content_async(prompt)
-            return response.text.strip()
-            
-        except Exception as e:
-            print(f"Debate generation error: {e}")
-            return "That's an interesting point, but I respectfully disagree."
+    async def transcribe_audio(self, audio_data, mime_type):
+        return await self._generate([{"role": "user", "parts": [
+            {"text": "Transcribe only the intelligible spoken words in this recording. Do not answer the speaker. If there is no speech, return exactly [NO_SPEECH]."},
+            {"inlineData": {"mimeType": mime_type, "data": base64.b64encode(audio_data).decode()}},
+        ]}])
 
 
-# Global instance
 gemini_service = GeminiService()

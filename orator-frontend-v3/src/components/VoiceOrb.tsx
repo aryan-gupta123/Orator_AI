@@ -88,6 +88,8 @@ export function VoiceOrb({
       {/* Main orb button */}
       <motion.button
         onClick={onClick}
+        aria-label={isRecording ? "Stop recording and send" : "Start recording"}
+        disabled={!isRecording && status !== "idle"}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={cn(
@@ -167,14 +169,14 @@ export function VoiceOrb({
           !isActive && "text-slate-400"
         )}>
           {isRecording
-            ? "Tap to stop"
+            ? "Tap to send"
             : isSpeaking
             ? "Speaking..."
             : isThinking
             ? "Thinking..."
             : status === "listening"
-            ? "Listening..."
-            : "Tap to speak"}
+            ? "Transcribing..."
+            : "Tap to record"}
         </span>
       </motion.div>
     </div>

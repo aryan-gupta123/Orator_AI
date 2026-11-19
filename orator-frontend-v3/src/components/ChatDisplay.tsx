@@ -56,7 +56,7 @@ export function ChatDisplay({ messages, className }: ChatDisplayProps) {
           className="text-center"
         >
           <div className="text-5xl mb-4">💬</div>
-          <p className="text-slate-400 text-lg">Start speaking to begin the conversation</p>
+          <p className="text-slate-400 text-lg">Record or type to begin the conversation</p>
           <p className="text-slate-500 text-sm mt-2">Your words will appear here</p>
         </motion.div>
       </div>

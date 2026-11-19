@@ -4,3 +4,21 @@ venv/
 backend/venv/
 
 backend/.env/
+
+# Generated dependencies, builds and local credentials
+.venv/
+**/node_modules/
+**/.next/
+**/__pycache__/
+.pytest_cache/
+*.pyc
+.env
+.env.local
+*.log
+
+.env.local.previous
+
+*.tsbuildinfo
+
+# This workspace helper contains machine-specific cache paths.
+scripts/workspace-local.sh

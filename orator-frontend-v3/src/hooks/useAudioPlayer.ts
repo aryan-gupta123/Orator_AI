@@ -1,54 +1,52 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
+
+export interface Speech {
+  id: string;
+  text: string;
+  audio: string | null;
+}
 
 export function useAudioPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const queueAudio = useCallback((base64: string) => {
-    console.log("Received audio to play, length:", base64.length);
-    
-    try {
-      // Create audio element if it doesn't exist
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-      }
-      
-      // Create data URL from base64
-      const audioUrl = `data:audio/mpeg;base64,${base64}`;
-      
-      audioRef.current.src = audioUrl;
-      audioRef.current.onplay = () => {
-        console.log("Audio started playing");
-        setIsPlaying(true);
-      };
-      audioRef.current.onended = () => {
-        console.log("Audio finished playing");
-        setIsPlaying(false);
-      };
-      audioRef.current.onerror = (e) => {
-        console.error("Audio playback error:", e);
-        setIsPlaying(false);
-      };
-      
-      // Play the audio
-      audioRef.current.play()
-        .then(() => console.log("Audio play() succeeded"))
-        .catch((err) => console.error("Audio play() failed:", err));
-        
-    } catch (err) {
-      console.error("Error setting up audio:", err);
-    }
-  }, []);
+  const [error, setError] = useState<string | null>(null);
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const done = useRef<(() => void) | null>(null);
 
   const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    setIsPlaying(false);
+    if (audio.current) { audio.current.pause(); audio.current.src = ""; audio.current = null; }
+    window.speechSynthesis?.cancel();
+    done.current?.();
+    done.current = null;
   }, []);
 
-  return { isPlaying, queueAudio, stopAudio };
+  const playSpeech = useCallback((speech: Speech, onFinished: () => void) => {
+    stopAudio();
+    setError(null);
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      done.current = null;
+      onFinished();
+    };
+    done.current = finish;
+    const fail = () => { setError("Audio could not play. Your response is available in the transcript."); finish(); };
+    if (speech.audio) {
+      const player = new Audio(`data:audio/mpeg;base64,${speech.audio}`);
+      audio.current = player;
+      player.onended = finish;
+      player.onerror = fail;
+      player.play().catch(fail);
+    } else if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(speech.text);
+      utterance.lang = "en-US";
+      utterance.onend = finish;
+      utterance.onerror = event => { if (event.error === "canceled" || event.error === "interrupted") finish(); else fail(); };
+      window.speechSynthesis.speak(utterance);
+    } else fail();
+  }, [stopAudio]);
+
+  useEffect(() => () => stopAudio(), [stopAudio]);
+  return { playSpeech, stopAudio, error };
 }
